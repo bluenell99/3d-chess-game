@@ -12,5 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3d22350bdcdf4a2c99c447fd987605fc, type: 3}
   m_Name: Standard Materials
   m_EditorClassIdentifier: 
-  <_whiteMaterial>k__BackingField: {fileID: 2100000, guid: 570b896c65fdd754ba071b502e74584b, type: 2}
-  <_blackMaterial>k__BackingField: {fileID: 2100000, guid: 70b472f09873b89449e4d538f1f9d1b4, type: 2}
+  <_whiteMaterial>k__BackingField: {fileID: 2100000, guid: c0b0c290e65671945b5c99ef6194292c, type: 2}
+  <_blackMaterial>k__BackingField: {fileID: 2100000, guid: 781ffb0914b5fe242aec1d660aae5644, type: 2}

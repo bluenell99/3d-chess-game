@@ -7,7 +7,7 @@ public class GameController : Singleton<GameController>
 {
 
     [Header("Game Setup")]
-    [SerializeField] private float _squareSize = 1.5f;
+    
     [SerializeField] private Transform _container;
     [SerializeField] private Transform _availableMovesContainer;
     [SerializeField] private BoardLayout _layout;
@@ -96,9 +96,9 @@ public class GameController : Singleton<GameController>
         
         foreach (var move in moves)
         {
-            var offset = _squareSize / 2;
-            var x = move.Coordinate.x * _squareSize + offset;
-            var y = move.Coordinate.y * _squareSize + offset;
+            var offset = _layout.SquareSize / 2;
+            var x = move.Coordinate.x * _layout.SquareSize + offset;
+            var y = move.Coordinate.y * _layout.SquareSize + offset;
         
             var position = new Vector3(x, 0, y);
 

@@ -22,3 +22,4 @@ MonoBehaviour:
     PrefabModifications: []
     SerializationNodes: []
   Fen: 'rnb1kbnr/pppp1ppp/8/4p3/8/5q2/PPPP1PPP/RNBQKBNR w KQkq - 1 3 '
+  SquareSize: 2.02

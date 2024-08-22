@@ -39,7 +39,9 @@ namespace ChessGame
         {
             _mainCamera = Camera.main;
 
+            _selectionView.Initialise(false);
             _selectionView.HideSelectionView();
+            
             _pawnPromotionUI.gameObject.SetActive(false);
             _boardController = new BoardController(_container, _layout, _materials);
 
@@ -108,6 +110,8 @@ namespace ChessGame
                 var position = new Vector3(x, 0, y);
 
                 var selection = Instantiate(_selectionView, _availableMovesContainer);
+                selection.Initialise(true);
+                
                 selection.transform.localPosition = position;
                 selection.Coordinate = move.Coordinate;
             }

@@ -9,6 +9,13 @@ namespace ChessGame
 
         private MeshRenderer[] _renderers;
 
+        private bool isSelectable;
+        
+        public void Initialise(bool selectable)
+        {
+            isSelectable = selectable;
+        }
+        
         public void MoveSelectionView(Vector3 position)
         {
             _gfx.SetActive(true);
@@ -36,6 +43,8 @@ namespace ChessGame
 
         public void OnSelect()
         {
+            if (!isSelectable) return;
+            
             GameController.Instance.MoveSelected(Coordinate);
         }
     }

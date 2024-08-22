@@ -2,27 +2,30 @@
 using System.Linq;
 using UnityEngine;
 
-public class Bishop : Piece
+namespace ChessGame
 {
-    public Bishop(Vector2Int coordinate, PieceColor pieceColor, Board board) : base(PieceType.Bishop, coordinate, pieceColor)
+    public class Bishop : Piece
     {
-    }
-
-    public override HashSet<Move> GetLegalMoves()
-    {
-        // Bishop moves diagonally
-        HashSet<Vector2Int> directions = new HashSet<Vector2Int>
+        public Bishop(Vector2Int coordinate, PieceColor pieceColor, Board board) : base(PieceType.Bishop, coordinate, pieceColor)
         {
-            new(1, 1), new(1, -1),
-            new(-1, 1), new(-1, -1)
-        };
+        }
+
+        public override HashSet<Move> GetLegalMoves()
+        {
+            // Bishop moves diagonally
+            HashSet<Vector2Int> directions = new HashSet<Vector2Int>
+            {
+                new(1, 1), new(1, -1),
+                new(-1, 1), new(-1, -1)
+            };
 
 
-        MoveStrategy strategy = new LineMoveStrategy();
-        HashSet<Move> possibleMoves = strategy.GetPossibleMoves(directions, this, Board);
+            MoveStrategy strategy = new LineMoveStrategy();
+            HashSet<Move> possibleMoves = strategy.GetPossibleMoves(directions, this, Board);
 
-        return Board.EvaluateMoveLegality(possibleMoves, this);
+            return Board.EvaluateMoveLegality(possibleMoves, this);
+        }
+
+
     }
-
-
 }

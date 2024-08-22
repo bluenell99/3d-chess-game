@@ -2,22 +2,24 @@
 using Sirenix.OdinInspector;
 using UnityEngine;
 
-[CreateAssetMenu(menuName = "Chess/Board Layout")]
-public class BoardLayout : SerializedScriptableObject
+namespace ChessGame
 {
-    public string Fen;
-    public float SquareSize = 1.5f;
+    [CreateAssetMenu(menuName = "Chess/Board Layout")]
 
-    public PieceColor StartingPieceColor { get; private set; }
-    
-    public List<Piece> GetPieces()
+    public class BoardLayout : SerializedScriptableObject
     {
-        Fen fen = new Fen(Fen);
+        public string Fen;
+        public float SquareSize = 1.5f;
 
-        StartingPieceColor = fen.ActiveColor;
-        
-        return fen.Pieces;
+        public PieceColor StartingPieceColor { get; private set; }
+
+        public List<Piece> GetPieces()
+        {
+            Fen fen = new Fen(Fen);
+
+            StartingPieceColor = fen.ActiveColor;
+
+            return fen.Pieces;
+        }
     }
-
-   
 }

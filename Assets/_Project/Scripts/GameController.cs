@@ -1,156 +1,172 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
+using Sirenix.OdinInspector;
 using UnityEngine;
 
-public class GameController : Singleton<GameController>
+namespace ChessGame
 {
-
-    [Header("Game Setup")]
-    
-    [SerializeField] private Transform _container;
-    [SerializeField] private Transform _availableMovesContainer;
-    [SerializeField] private BoardLayout _layout;
-    [SerializeField] private PieceMaterials _materials;
-
-    [SerializeField] private SelectionView _selectionView;
-    [SerializeField] private bool _turnsEnabled;
-    [SerializeField] private RectTransform _pawnPromotionUI;
-    
-    private BoardController _boardController;
-
-    private Camera _mainCamera;
-    private Piece _currentlySelectedPiece;
-    private Pawn _pawnToBePromoted;
-    
-
-    public PieceColor CurrentTurn { get; set; }
-    public bool PawnPromotionInProgress { get; private set; }
-    public Piece LastPieceMoved { get; private set; }
-    public bool TurnsEnabled => _turnsEnabled;
-    
-    
-    private void Start()
+    public class GameController : Singleton<GameController>
     {
-        _mainCamera = Camera.main;
 
-        _selectionView.HideSelectionView();
-        _pawnPromotionUI.gameObject.SetActive(false);
-        _boardController = new BoardController(_container, _layout, _materials);
+        [Header("Game Setup")] [SerializeField]
+        private Transform _container;
+
+        [SerializeField, Required] private Transform _availableMovesContainer;
+        [SerializeField, Required] private BoardLayout _layout;
+        [SerializeField, Required] private PieceMaterials _materials;
+        [SerializeField, Required] private SelectionView _selectionView;
+        [SerializeField, Required] private TakenPieceContainer _takenPiecesContainer;
+        [SerializeField, Required] private RectTransform _pawnPromotionUI;
         
-    }
+        [Header("Game Settings")]
+        [SerializeField] private bool _turnsEnabled;
 
-    private void Update()
-    {
         
-        DetectSelection();
-    }
+        private BoardController _boardController;
 
-    // TODO Optimise, refactor to a more generic "Selection" system
-    private void DetectSelection()
-    {
-        if (Input.GetMouseButtonDown(0))
+        private Camera _mainCamera;
+        private Piece _currentlySelectedPiece;
+        private Pawn _pawnToBePromoted;
+
+
+        public PieceColor CurrentTurn { get; set; }
+        public bool PawnPromotionInProgress { get; private set; }
+        public Piece LastPieceMoved { get; private set; }
+        public bool TurnsEnabled => _turnsEnabled;
+
+
+        private void Start()
         {
-            Ray ray = _mainCamera.ScreenPointToRay(Input.mousePosition);
+            _mainCamera = Camera.main;
 
-            if (Physics.Raycast(ray, out var hit))
+            _selectionView.HideSelectionView();
+            _pawnPromotionUI.gameObject.SetActive(false);
+            _boardController = new BoardController(_container, _layout, _materials);
+
+        }
+
+        private void Update()
+        {
+
+            DetectSelection();
+        }
+
+        // TODO Optimise, refactor to a more generic "Selection" system
+        private void DetectSelection()
+        {
+            if (Input.GetMouseButtonDown(0))
             {
-                if (hit.transform.TryGetComponent(out ISelectable selectable))
+                Ray ray = _mainCamera.ScreenPointToRay(Input.mousePosition);
+
+                if (Physics.Raycast(ray, out var hit))
                 {
-                    selectable.OnSelect();
+                    if (hit.transform.TryGetComponent(out ISelectable selectable))
+                    {
+                        selectable.OnSelect();
+                    }
                 }
             }
         }
-    }
 
-    public void SetSelectedPiece(PieceView view)
-    {
-        var piece = view.Controller.Piece;
-        
-        if (_currentlySelectedPiece != piece)
+        public void SetSelectedPiece(PieceView view)
         {
-            _currentlySelectedPiece = view.Controller.Piece;
-            
-            _selectionView.MoveSelectionView(view.transform.position);
-            _selectionView.SetColor(Color.blue);
-            
-            ShowAvailableMoves(view);
-            
+            var piece = view.Controller.Piece;
+
+            if (_currentlySelectedPiece != piece)
+            {
+                _currentlySelectedPiece = view.Controller.Piece;
+
+                _selectionView.MoveSelectionView(view.transform.position);
+                _selectionView.SetColor(Color.blue);
+
+                ShowAvailableMoves(view);
+
+            }
+            else
+            {
+                _currentlySelectedPiece = null;
+                _selectionView.HideSelectionView();
+                ClearAvailableMovesView();
+            }
+
         }
-        else
+
+        private void ShowAvailableMoves(PieceView view)
         {
+            ClearAvailableMovesView();
+
+            Piece piece = view.Controller.Piece;
+            HashSet<Move> moves = piece.GetLegalMoves().Where(m => m.IsDeliveringCheck == false).ToHashSet();
+
+
+            foreach (var move in moves)
+            {
+                var offset = _layout.SquareSize / 2;
+                var x = move.Coordinate.x * _layout.SquareSize + offset;
+                var y = move.Coordinate.y * _layout.SquareSize + offset;
+
+                var position = new Vector3(x, 0, y);
+
+                var selection = Instantiate(_selectionView, _availableMovesContainer);
+                selection.transform.localPosition = position;
+                selection.Coordinate = move.Coordinate;
+            }
+
+            ServiceManager.GetService<AudioService>().OnPieceMove();
+
+        }
+
+        private void ClearAvailableMovesView()
+        {
+            if (_availableMovesContainer.transform.childCount == 0)
+                return;
+
+            for (int i = 0; i < _availableMovesContainer.transform.childCount; i++)
+            {
+                Destroy(_availableMovesContainer.transform.GetChild(i).gameObject);
+            }
+        }
+
+        public void MoveSelected(Vector2Int coordinate)
+        {
+            _currentlySelectedPiece.SetPositionOnBoard(coordinate, false, false
+            );
+
             _currentlySelectedPiece = null;
             _selectionView.HideSelectionView();
+
+            ServiceManager.GetService<AudioService>().OnPieceMove();
+
             ClearAvailableMovesView();
+
         }
-        
-    }
 
-    private void ShowAvailableMoves(PieceView view)
-    {
-        ClearAvailableMovesView();
-        
-        Piece piece = view.Controller.Piece;
-        HashSet<Move> moves = piece.GetLegalMoves().Where(m => m.IsDeliveringCheck == false).ToHashSet();
-
-        
-        foreach (var move in moves)
+        public void DisplayPromotionUI(Pawn pawn)
         {
-            var offset = _layout.SquareSize / 2;
-            var x = move.Coordinate.x * _layout.SquareSize + offset;
-            var y = move.Coordinate.y * _layout.SquareSize + offset;
-        
-            var position = new Vector3(x, 0, y);
-
-            var selection = Instantiate(_selectionView, _availableMovesContainer);
-            selection.transform.localPosition = position;
-            selection.Coordinate = move.Coordinate;
+            PawnPromotionInProgress = true;
+            _pawnToBePromoted = pawn;
+            _pawnPromotionUI.gameObject.SetActive(true);
         }
-        
-    }
 
-    private void ClearAvailableMovesView()
-    {
-        if (_availableMovesContainer.transform.childCount == 0)
-            return; 
-        
-        for (int i = 0; i < _availableMovesContainer.transform.childCount; i++)
+        public void PromotionSelected(int intType)
         {
-            Destroy(_availableMovesContainer.transform.GetChild(i).gameObject);
+            PieceType type = (PieceType)intType;
+
+            PawnPromotionInProgress = false;
+
+            _boardController.UpdatePiece(_pawnToBePromoted, type);
+            _pawnToBePromoted = null;
+            _pawnPromotionUI.gameObject.SetActive(false);
         }
-    }
 
-    public void MoveSelected(Vector2Int coordinate)
-    {
-        _currentlySelectedPiece.SetPositionOnBoard(coordinate, false, false);
-        
-        _currentlySelectedPiece = null;
-        _selectionView.HideSelectionView();
-        
-        ClearAvailableMovesView();
-        
-    }
+        public void SetLastMovedPiece(Piece piece)
+        {
+            LastPieceMoved = piece;
+        }
 
-    public void DisplayPromotionUI(Pawn pawn)
-    {
-        PawnPromotionInProgress = true;
-        _pawnToBePromoted = pawn;
-        _pawnPromotionUI.gameObject.SetActive(true);
-    }
-
-    public void PromotionSelected(int intType)
-    {
-        PieceType type = (PieceType)intType;
-
-        PawnPromotionInProgress = false;
-        
-        _boardController.UpdatePiece(_pawnToBePromoted, type);
-        _pawnToBePromoted = null;
-        _pawnPromotionUI.gameObject.SetActive(false);
-    }
-
-    public void SetLastMovedPiece(Piece piece)
-    {
-        LastPieceMoved = piece;
+        public Transform GetTakenPieceContainer(PieceColor color)
+        {
+            return color == PieceColor.White ? _takenPiecesContainer.White : _takenPiecesContainer.Black;
+        }
     }
 }

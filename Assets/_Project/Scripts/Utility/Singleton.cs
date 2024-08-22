@@ -14,11 +14,11 @@ public class Singleton<T> : MonoBehaviour where T : Component
     {
         get
         {
-            if (instance == null)
+            if (!instance)
             {
                 instance = FindObjectOfType<T>();
 
-                if (instance == null)
+                if (!instance)
                 {
                     var gameObject = new GameObject(typeof(T).Name);
                     instance = gameObject.AddComponent<T>();

@@ -47,6 +47,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   checkIndicator: {fileID: 0}
+  _spawnOffset: {x: 0, y: 2, z: 0}
 --- !u!136 &4756489277008779374
 CapsuleCollider:
   m_ObjectHideFlags: 0

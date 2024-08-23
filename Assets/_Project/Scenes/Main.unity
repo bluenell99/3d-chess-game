@@ -2111,7 +2111,7 @@ MonoBehaviour:
   _availableMovesContainer: {fileID: 81541278}
   _layout: {fileID: 11400000, guid: 6f01edaba51bf7749ab3004316af32d3, type: 2}
   _materials: {fileID: 11400000, guid: b224cb066f05ea84b940e4ef2781ab54, type: 2}
-  _selectionView: {fileID: 0}
+  _selectionView: {fileID: 19611489}
   _takenPiecesContainer: {fileID: 411918955}
   _pawnPromotionUI: {fileID: 1176504445}
   _turnsEnabled: 1

@@ -14,6 +14,12 @@ namespace ChessGame
 
         public event Action<Pawn> onPawnPromotionAvailable;
 
+
+        public void Promote(Pawn pawn)
+        {
+            onPawnPromotionAvailable?.Invoke(pawn);
+        }
+        
         public override HashSet<Move> GetLegalMoves()
         {
             int direction = PieceColor == PieceColor.White ? 1 : 0;
@@ -31,16 +37,19 @@ namespace ChessGame
 
         public override void SetPositionOnBoard(Vector2Int position, bool isIntialSetup, bool bypassTurnOrder)
         {
-            base.SetPositionOnBoard(position, isIntialSetup, bypassTurnOrder);
-
-
-            int verticalEdge = PieceColor == PieceColor.White ? 7 : 0;
-
-            if (Coordinate.y == verticalEdge)
+            PreviousCoordinate = Coordinate;
+            
+            if (isIntialSetup)
             {
-                Debug.Log("Pawn at edge, ready for promotion");
-                onPawnPromotionAvailable?.Invoke(this);
+                Coordinate = position;
+                OnPositionChanged(position);
+                return;
             }
+
+            CaptureStrategy captureStrategy = new PawnCaptureStrategy();
+            captureStrategy.TryCapture(Board, this, position);
+
+            CompleteMove(this, position);
         }
     }
 }

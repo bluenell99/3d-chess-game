@@ -96,6 +96,25 @@ namespace ChessGame
 
             return false;
         }
+        
+        public override void SetPositionOnBoard(Vector2Int position, bool isIntialSetup, bool bypassTurnOrder)
+        {
+            PreviousCoordinate = Coordinate;
+            
+            if (isIntialSetup)
+            {
+                Coordinate = position;
+                OnPositionChanged(position);
+                return;
+            }
+            
+            CaptureStrategy captureStrategy = new StandardCaptureStrategy();
+            captureStrategy.TryCapture(Board, this, position);
+
+            CompleteMove(this, position);
+        }
 
     }
+    
+    
 }

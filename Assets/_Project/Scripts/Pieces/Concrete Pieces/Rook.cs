@@ -27,17 +27,14 @@ namespace ChessGame
             // if this piece hasn't moved, and the knight hasn't moved
             if (!king.HasMoved && !HasMoved)
             {
-
                 bool isKingside = Coordinate.x > king.Coordinate.x;
 
                 if (CanCastle(isKingside, king))
                 {
                     possibleMoves.Add(new Move(king.Coordinate, false, MoveType.Check));
                 }
-
             }
-
-
+            
             return Board.EvaluateMoveLegality(possibleMoves, this);
 
         }
@@ -49,6 +46,22 @@ namespace ChessGame
             return castlingSquares.All(sq => !Board.IsSquareOccupied(sq));
         }
 
+        public override void SetPositionOnBoard(Vector2Int position, bool isIntialSetup, bool bypassTurnOrder)
+        {
+            PreviousCoordinate = Coordinate;
+            
+            if (isIntialSetup)
+            {
+                Coordinate = position;
+                OnPositionChanged(position);
+                return;
+            }
+
+            CaptureStrategy strategy = new RookCaptureStrategy();
+            strategy.TryCapture(Board, this, position);
+
+            CompleteMove(this, position);
+        }
 
 
 

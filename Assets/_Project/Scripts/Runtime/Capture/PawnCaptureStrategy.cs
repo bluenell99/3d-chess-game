@@ -4,6 +4,13 @@ namespace ChessGame
 {
     public class PawnCaptureStrategy : CaptureStrategy
     {
+        
+        /// <summary>
+        /// Trys to capture
+        /// </summary>
+        /// <param name="board"></param>
+        /// <param name="piece"></param>
+        /// <param name="position"></param>
         public override void TryCapture(Board board, Piece piece, Vector2Int position)
         {
             var pawn = piece as Pawn;
@@ -15,7 +22,7 @@ namespace ChessGame
                     pawn.Promote(pawn);
 
             // en-passant
-            if (GameController.Instance.LastPieceMoved is Pawn lastMovedPawn)
+            if (board.LastPieceMoved is Pawn lastMovedPawn)
             {
                 int direction = piece.PieceColor == PieceColor.White ? 1 : -1;
                 Vector2Int enpassantTarget = new Vector2Int(position.x, position.y - direction);

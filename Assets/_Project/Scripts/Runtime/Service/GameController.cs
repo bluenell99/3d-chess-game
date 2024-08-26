@@ -20,7 +20,6 @@ namespace ChessGame
         
         [Header("Game Settings")]
         [SerializeField] private bool _turnsEnabled;
-
         
         private BoardController _boardController;
 
@@ -31,7 +30,7 @@ namespace ChessGame
 
         public PieceColor CurrentTurn { get; set; }
         public bool PawnPromotionInProgress { get; private set; }
-        public Piece LastPieceMoved { get; private set; }
+
         public bool TurnsEnabled => _turnsEnabled;
 
 
@@ -49,7 +48,6 @@ namespace ChessGame
 
         private void Update()
         {
-
             DetectSelection();
         }
 
@@ -67,6 +65,11 @@ namespace ChessGame
                         selectable.OnSelect();
                     }
                 }
+            }
+
+            if (Input.GetKeyDown(KeyCode.Space))
+            {
+                _boardController.ResetBoard();
             }
         }
 
@@ -161,11 +164,6 @@ namespace ChessGame
             _boardController.UpdatePiece(_pawnToBePromoted, type);
             _pawnToBePromoted = null;
             _pawnPromotionUI.gameObject.SetActive(false);
-        }
-
-        public void SetLastMovedPiece(Piece piece)
-        {
-            LastPieceMoved = piece;
         }
 
         public Transform GetTakenPieceContainer(PieceColor color)

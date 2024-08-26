@@ -34,6 +34,8 @@ namespace ChessGame
             }
         }
 
+        
+        
         public King(Vector2Int coordinate, PieceColor pieceColor, Board board) : base(PieceType.King, coordinate,
             pieceColor)
         {

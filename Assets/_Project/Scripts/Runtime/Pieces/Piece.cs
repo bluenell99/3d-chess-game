@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 namespace ChessGame
@@ -12,9 +11,10 @@ namespace ChessGame
         [field: SerializeField] public PieceType Type { get; private set; }
         [field: SerializeField] public PieceColor PieceColor { get; private set; }
         [field: SerializeField] public int MaterialCost { get; private set; }
-        [field: SerializeField] public Vector2Int Coordinate { get; protected set; }
+        [field: SerializeField] public Vector2Int Coordinate { get;  set; }
 
         public Vector2Int PreviousCoordinate { get; protected set; }
+        public Vector2Int StartingCoordinate { get; protected set; }
 
         public event Action<Vector2Int> onPositionChanged;
         public event Action<PieceType> onTypeChanged;
@@ -30,6 +30,7 @@ namespace ChessGame
         {
             Type = type;
             Coordinate = coordinate;
+            StartingCoordinate = coordinate;
             MaterialCost = GameConstants.MaterialCostsDictionary[type];
             PieceColor = pieceColor;
             Board = board;
@@ -48,11 +49,7 @@ namespace ChessGame
             onPieceTaken?.Invoke(this);
         }
 
-
-        public virtual void SetPositionOnBoard(Vector2Int position, bool isIntialSetup, bool bypassTurnOrder)
-        {
-            
-        }
+        public abstract void SetPositionOnBoard(Vector2Int position, bool isIntialSetup, bool bypassTurnOrder);
 
         protected void CompleteMove(Piece piece, Vector2Int position)
         {
@@ -67,7 +64,7 @@ namespace ChessGame
             king.IsInCheck = Board.GetAttackingPieces(king).Count > 0;
             opponentsKing.IsInCheck = Board.GetAttackingPieces(opponentsKing).Count > 0;
 
-            GameController.Instance.SetLastMovedPiece(this);
+            Board.SetLastMovedPiece(this);
 
             GameController.Instance.CurrentTurn = GameController.Instance.CurrentTurn == PieceColor.White
                 ? PieceColor.Black
@@ -82,6 +79,11 @@ namespace ChessGame
         public abstract HashSet<Move> GetLegalMoves();
 
 
+        public void ResetPiece()
+        {
+            SetPositionOnBoard(StartingCoordinate, true, false);
+            HasMoved = false;
+        }
 
     }
 }

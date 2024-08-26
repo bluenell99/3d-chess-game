@@ -67,7 +67,7 @@ namespace ChessGame
 
         private void AddEnPassantMove(HashSet<Move> availableMoves, Piece piece, Vector2Int target, Board board, int dir)
         {
-            Piece lastPieceMoved = GameController.Instance.LastPieceMoved;
+            Piece lastPieceMoved = board.LastPieceMoved;
 
             if (lastPieceMoved is not Pawn)
                 return;

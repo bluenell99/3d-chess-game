@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using NUnit.Framework;
 using UnityEngine;
 
 
@@ -10,11 +12,13 @@ namespace ChessGame
 
         #region SETUP
 
-        private HashSet<Vector2Int> Squares { get; }
-        private HashSet<Piece> PiecesInPlay { get; set; }
+        public  HashSet<Vector2Int> Squares { get; private set; }
+        public HashSet<Piece> PiecesInPlay { get; private set; }
 
         public Piece LastPieceMoved { get; set; }
         private int BoardSize { get; set; }
+
+        public event Action onBoardReset;
 
         /// <summary>
         /// Create a new board with a given size
@@ -35,6 +39,11 @@ namespace ChessGame
         /// </summary>
         private void CalculateSquareCoordinates()
         {
+            if (BoardSize <=0)
+            {
+                throw new Exception("Board size must be a positive integer");
+            }
+            
             for (int i = 0; i < BoardSize; i++)
             {
                 for (int j = 0; j < BoardSize; j++)
@@ -49,6 +58,8 @@ namespace ChessGame
 
         # region ACCESS
 
+        public bool IsEvaluatingCheck { get; set; } = false;
+        
         /// <summary>
         /// Returns all the opponents pieces
         /// </summary>
@@ -76,14 +87,15 @@ namespace ChessGame
             return PiecesInPlay.Where(p => p.PieceColor == piece.PieceColor).ToHashSet();
         }
 
-
-
         /// <summary>
         /// Adds a piece to play
         /// </summary>
         /// <param name="piece"></param>
         public void AddPiece(Piece piece)
         {
+            if (piece == null)
+                throw new NullReferenceException("Piece cannot be null");
+            
             PiecesInPlay.Add(piece);
         }
 
@@ -93,14 +105,25 @@ namespace ChessGame
         /// <param name="piece"></param>
         public void RemovePiece(Piece piece)
         {
+            if (piece == null)
+                throw new NullReferenceException("Piece cannot be null");
+            
             if (!PiecesInPlay.Contains(piece))
-            {
-                Debug.Log("Piece is not in play");
-            }
+                throw new Exception("Pieces in play does not contain given piece");
 
             PiecesInPlay.Remove(piece);
         }
 
+        public void ResetBoard()
+        {
+            foreach (var piece in PiecesInPlay)
+            {
+                piece.ResetPiece();
+            }
+            
+            onBoardReset?.Invoke();
+        }
+        
         /// <summary>
         /// Is a given square on the board
         /// </summary>
@@ -113,10 +136,7 @@ namespace ChessGame
         /// </summary>
         /// <param name="coordinate"></param>
         /// <returns></returns>
-        public bool IsSquareOccupied(Vector2Int coordinate)
-        {
-            return PiecesInPlay.Any(p => p.Coordinate == coordinate);
-        }
+        public bool IsSquareOccupied(Vector2Int coordinate) => PiecesInPlay.Any(p => p.Coordinate == coordinate);
 
         /// <summary>
         /// Try and get a piece from the board
@@ -141,20 +161,14 @@ namespace ChessGame
         /// </summary>
         /// <param name="piece"></param>
         /// <returns></returns>
-        public King GetKing(Piece piece)
-        {
-            return (King)GetPieces(piece).First(p => p is King);
-        }
+        public King GetKing(Piece piece) => (King)GetPieces(piece).First(p => p is King);
 
         /// <summary>
         /// Returns the opponent of this piece's king
         /// </summary>
         /// <param name="piece"></param>
         /// <returns></returns>
-        public King GetOpponentsKing(Piece piece)
-        {
-            return (King)GetOpponentPieces(piece).First(p => p is King);
-        }
+        public King GetOpponentsKing(Piece piece) => (King)GetOpponentPieces(piece).First(p => p is King);
 
         public HashSet<Piece> GetAttackingPieces(King king)
         {
@@ -180,24 +194,27 @@ namespace ChessGame
         public HashSet<Move> EvaluateMoveLegality(HashSet<Move> possibleMoves, Piece piece)
         {
             King king = GetKing(piece);
+            List<Move> illegalMoves = new List<Move>();
 
             if (!king.IsInCheck)
-                return possibleMoves;
+            {
+                // illegalMoves.AddRange(possibleMoves.Where(move => move.RevealsCheck(piece, this)));
+                //
+                // foreach (var move in illegalMoves)
+                // {
+                //     possibleMoves.Remove(move);
+                // }
 
-            Debug.Log("King is in check");
+                return possibleMoves;
+            }
 
             Piece checkingPiece = GetSingleCheckingPiece(piece);
 
             if (checkingPiece == null)
                 return new HashSet<Move>();
 
-            Debug.Log($"Checking piece {checkingPiece.PieceColor}:{checkingPiece.Type} at {checkingPiece.Coordinate}");
-
             HashSet<Move> checkingPieceMoves =
                 checkingPiece.GetLegalMoves().Where(m => m.IsDeliveringCheck).ToHashSet();
-
-            Debug.Log(
-                $"{king.PieceColor} king at {king.Coordinate} is under check from {checkingPiece.PieceColor}: {checkingPiece.Type} at {checkingPiece.Coordinate}");
 
             return GetBlockingOrCapturingMoves(possibleMoves, checkingPiece, checkingPieceMoves);
 
@@ -215,12 +232,17 @@ namespace ChessGame
             }
             else
             {
-                requiredSquares.Add(new Vector2Int(1, rank)); // b1 or b8
-                requiredSquares.Add(new Vector2Int(2, rank)); // c1 or c8
-                requiredSquares.Add(new Vector2Int(3, rank)); // d1 or d8
+                requiredSquares.Add(new Vector2Int(1, rank));
+                requiredSquares.Add(new Vector2Int(2, rank));
+                requiredSquares.Add(new Vector2Int(3, rank));
             }
 
             return requiredSquares;
+        }
+
+        public void SetLastMovedPiece(Piece piece)
+        {
+            LastPieceMoved = piece;
         }
 
         #endregion
@@ -234,11 +256,9 @@ namespace ChessGame
 
             if (opponentPieces.Count != 1) return null;
 
-            Debug.Log(opponentPieces.First());
             return opponentPieces.First();
 
         }
-
 
         /// <summary>
         /// Gets all of this pieces moves that will block or capture a checking piece
@@ -247,8 +267,7 @@ namespace ChessGame
         /// <param name="checkingPieces"></param>
         /// <param name="checkingMoves"></param>
         /// <returns></returns>
-        private HashSet<Move> GetBlockingOrCapturingMoves(HashSet<Move> possibleMoves, Piece checkingPiece,
-            HashSet<Move> checkingMoves)
+        private HashSet<Move> GetBlockingOrCapturingMoves(HashSet<Move> possibleMoves, Piece checkingPiece, HashSet<Move> checkingMoves)
         {
             HashSet<Move> legalMoves = new HashSet<Move>();
 

@@ -40,7 +40,14 @@ namespace ChessGame
 
             // update turn order based on starting layout
             GameController.Instance.CurrentTurn = _layout.StartingPieceColor;
+            Board.onBoardReset += OnBoardReset;
 
+        }
+
+        private void OnBoardReset()
+        {
+            Debug.Log("Board reset");
+            GameController.Instance.CurrentTurn = _layout.StartingPieceColor;
         }
 
         public void UpdatePiece(Piece piece, PieceType type)
@@ -93,6 +100,11 @@ namespace ChessGame
         private void OnPieceTaken(Piece piece)
         {
             Board.RemovePiece(piece);
+        }
+
+        public void ResetBoard()
+        {
+            Board.ResetBoard();
         }
     }
 

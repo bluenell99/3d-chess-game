@@ -53,9 +53,7 @@ namespace ChessGame
             PlacementStrategy placementStrategy = new RandomPointInCircle(3);
             Transform container = GameController.Instance.GetTakenPieceContainer(color);
             
-            _transform.SetParent(container);
-            _transform.position = Vector3.zero;
-            Vector3 position = placementStrategy.GetPosition(_transform.position);
+            Vector3 position = placementStrategy.GetPosition(container.transform.position);
             
             SetPosition(position);
         }
@@ -73,7 +71,7 @@ namespace ChessGame
             if (!_isSelectable)
                 return;
             
-            if ((GameController.Instance.TurnsEnabled &&
+            if ((GameController.Instance.TurnsEnabled && 
                  Controller.Piece.PieceColor != GameController.Instance.CurrentTurn) ||
                 GameController.Instance.PawnPromotionInProgress)
                 return;

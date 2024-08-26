@@ -30,7 +30,7 @@ namespace ChessGame
 
         private void OnPieceTaken(Piece piece)
         {
-            _pieceView.gameObject.SetActive(false);
+            _pieceView.Take(piece.PieceColor);
         }
 
 

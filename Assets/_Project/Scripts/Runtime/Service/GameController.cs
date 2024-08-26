@@ -2,6 +2,8 @@ using System.Collections.Generic;
 using System.Linq;
 using Sirenix.OdinInspector;
 using UnityEngine;
+using Unity.UI;
+using UnityEngine.UI;
 
 namespace ChessGame
 {
@@ -17,6 +19,7 @@ namespace ChessGame
         [SerializeField, Required] private SelectionView _selectionView;
         [SerializeField, Required] private TakenPieceContainer _takenPiecesContainer;
         [SerializeField, Required] private RectTransform _pawnPromotionUI;
+        [SerializeField, Required] private Text _winText;
         
         [Header("Game Settings")]
         [SerializeField] private bool _turnsEnabled;
@@ -43,6 +46,7 @@ namespace ChessGame
             
             _pawnPromotionUI.gameObject.SetActive(false);
             _boardController = new BoardController(_container, _layout, _materials);
+            _winText.gameObject.SetActive(false);
 
         }
 
@@ -73,6 +77,12 @@ namespace ChessGame
             }
         }
 
+        public void DisplayWinText(PieceColor color)
+        {
+            _winText.gameObject.SetActive(true);
+            _winText.text = $"Checkmate! {color} wins!";
+        }
+        
         public void SetSelectedPiece(PieceView view)
         {
             var piece = view.Controller.Piece;

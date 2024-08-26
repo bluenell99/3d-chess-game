@@ -64,6 +64,10 @@ namespace ChessGame
             king.IsInCheck = Board.GetAttackingPieces(king).Count > 0;
             opponentsKing.IsInCheck = Board.GetAttackingPieces(opponentsKing).Count > 0;
 
+            // TODO sort this out because we don't need these variables but need to trigger the king on check function to run
+            bool kingInCheckmate = king.IsCheckMate;
+            bool opponentInCheckmate = opponentsKing.IsCheckMate;
+
             Board.SetLastMovedPiece(this);
 
             GameController.Instance.CurrentTurn = GameController.Instance.CurrentTurn == PieceColor.White

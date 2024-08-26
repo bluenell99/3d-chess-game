@@ -31,6 +31,11 @@ namespace ChessGame
 
                 piece.onPieceTaken += OnPieceTaken;
 
+                if (piece is King king)
+                {
+                    king.onKingInCheckMate += OnKingCheckmate;
+                }
+
                 if (piece is Pawn pawn)
                 {
                     pawn.onPawnPromotionAvailable += OnPawnPromotionAvailable;
@@ -42,6 +47,16 @@ namespace ChessGame
             GameController.Instance.CurrentTurn = _layout.StartingPieceColor;
             Board.onBoardReset += OnBoardReset;
 
+        }
+
+        private void OnKingCheckmate(King obj)
+        {
+            Debug.Log("Checkmate!");
+            PieceColor color = obj.PieceColor;
+
+            PieceColor winColour = color == PieceColor.White ? PieceColor.Black : PieceColor.White;
+            
+            GameController.Instance.DisplayWinText(winColour);
         }
 
         private void OnBoardReset()

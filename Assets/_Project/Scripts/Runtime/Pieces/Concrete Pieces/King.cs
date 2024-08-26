@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
@@ -29,13 +30,20 @@ namespace ChessGame
 
                 bool noLegalPieceMoves = totalLegalMoves.Count == 0;
 
-                return noLegalKingMoves && noLegalPieceMoves;
+                if (noLegalKingMoves && noLegalPieceMoves)
+                {
+                    Debug.Log($"King is in check {this.PieceColor}");
+                    onKingInCheckMate?.Invoke(this);
+                    return true;
+                }
+
+                return false;
 
             }
         }
 
-        
-        
+        public event Action<King> onKingInCheckMate;
+
         public King(Vector2Int coordinate, PieceColor pieceColor, Board board) : base(PieceType.King, coordinate,
             pieceColor)
         {

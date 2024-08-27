@@ -7,11 +7,29 @@ namespace ChessGame
 {
     public class Move
     {
-        public Vector2Int Coordinate { get; private set; }
+        
+        /// <summary>
+        /// The coordinate of the move
+        /// </summary>
+        public Vector2Int Coordinate { get; }
 
-        public MoveType MoveType { get; private set; }
+        // TODO implement logic to read this value 
+        /// <summary>
+        /// The type of move
+        /// </summary>
+        public MoveType MoveType { get; private set; } 
+        
+        /// <summary>
+        /// Is this move delivering check
+        /// </summary>
         public bool IsDeliveringCheck { get; set; }
         
+        /// <summary>
+        /// Create a new Move
+        /// </summary>
+        /// <param name="coordinate">The coordinate of this move</param>
+        /// <param name="isDeliveringCheck">Is the Move delivering check</param>
+        /// <param name="type">The type of Move</param>
         
         public Move(Vector2Int coordinate, bool isDeliveringCheck, MoveType type)
         {
@@ -19,6 +37,7 @@ namespace ChessGame
             IsDeliveringCheck = isDeliveringCheck;
         }
 
+        // TODO Implement this fully to stop pieces from moving to squares that would reveal a check. This scenario is considered an illegal move
         public bool RevealsCheck(Piece piece, Board board)
         {
             if (board.IsEvaluatingCheck)
@@ -55,7 +74,6 @@ namespace ChessGame
             
         }
     }
-
 
     public enum MoveType
     {

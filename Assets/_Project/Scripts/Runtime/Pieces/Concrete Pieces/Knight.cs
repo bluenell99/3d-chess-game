@@ -8,6 +8,7 @@ namespace ChessGame
         public Knight(Vector2Int coordinate, PieceColor pieceColor, Board board) : base(PieceType.Knight, coordinate,
             pieceColor)
         {
+            Board = board;
         }
 
         /// <summary>

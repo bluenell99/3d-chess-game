@@ -10,6 +10,7 @@ namespace ChessGame
     {
         public Pawn(Vector2Int coordinate, PieceColor pieceColor, Board board) : base(PieceType.Pawn, coordinate, pieceColor)
         {
+            Board = board;
         }
 
         /// <summary>

@@ -8,6 +8,7 @@ namespace ChessGame
     {
         public Rook(Vector2Int coordinate, PieceColor pieceColor, Board board) : base(PieceType.Rook, coordinate, pieceColor)
         {
+            Board = board;
         }
 
         public override HashSet<Move> GetLegalMoves()

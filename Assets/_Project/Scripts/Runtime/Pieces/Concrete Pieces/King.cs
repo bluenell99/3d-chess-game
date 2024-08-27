@@ -62,6 +62,7 @@ namespace ChessGame
             pieceColor)
         {
 
+            Board = board;
         }
         /// <summary>
         /// Returns the legal moves this piece has

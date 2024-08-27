@@ -119,24 +119,13 @@ namespace ChessGame
         {
             // set position and invoke event
             Coordinate = position;
-            onPositionChanged?.Invoke(position);
             HasMoved = true;
-
-            // get both Kings
-            King king = Board.GetKing(this);
-            King opponentsKing = Board.GetOpponentsKing(this);
-
-            // TODO sort this out as the logic should really sit on the Board itself, rather than from the Piece
-            // update the King's IsInCheck property based on this move
-            king.IsInCheck = Board.GetAttackingPieces(king).Count > 0;
-            opponentsKing.IsInCheck = Board.GetAttackingPieces(opponentsKing).Count > 0;
-            bool kingInCheckmate = king.IsCheckMate;
-            bool opponentInCheckmate = opponentsKing.IsCheckMate;
-
+            
             // Notify the board that this is the last piece moved
             Board.SetLastMovedPiece(this);
 
             // Invoke the end turn event
+            onPositionChanged?.Invoke(position);
             onPieceTurnEnd?.Invoke(this);
             
         }

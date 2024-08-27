@@ -9,6 +9,7 @@ namespace ChessGame
     {
         public Queen(Vector2Int coordinate, PieceColor pieceColor, Board board) : base(PieceType.Queen, coordinate, pieceColor)
         {
+            Board = board;
         }
 
         /// <summary>

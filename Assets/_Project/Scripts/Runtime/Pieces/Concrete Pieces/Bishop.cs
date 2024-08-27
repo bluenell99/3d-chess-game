@@ -8,6 +8,7 @@ namespace ChessGame
     {
         public Bishop(Vector2Int coordinate, PieceColor pieceColor, Board board) : base(PieceType.Bishop, coordinate, pieceColor)
         {
+            Board = board;
         }
 
         /// <summary>

@@ -7,4 +7,11 @@ This is my work-in-progress 3D chess game, built in Unity (Using HDRP)
 - Decoupled piece & piece view logic
 - Special Moves (Castling, En-Passant, Pawn Promotion etc)
 
- 
+ ## Structure
+
+- All the source files for this game can be found under `Assets/_Project`
+- Runtime code can be found under `Assets/_Project/Scripts/Runtime`
+- Unit Tests can be found under `Assets/_Project/Scripts/Tests`
+
+
+

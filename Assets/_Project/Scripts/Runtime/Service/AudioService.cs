@@ -11,8 +11,8 @@
         
         protected override void Awake()
         {
+
             base.Awake();
-            
             if (!_source)
             {
                 _source = GetComponent<AudioSource>();

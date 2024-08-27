@@ -2,7 +2,7 @@
     "name": "ChessGame",
     "rootNamespace": "",
     "references": [
-        ""
+        "Unity.InputSystem"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

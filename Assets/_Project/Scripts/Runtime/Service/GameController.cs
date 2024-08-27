@@ -3,6 +3,7 @@ using System.Linq;
 using Sirenix.OdinInspector;
 using UnityEngine;
 using Unity.UI;
+using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 namespace ChessGame
@@ -25,6 +26,9 @@ namespace ChessGame
         [SerializeField] private bool _turnsEnabled;
         
         private BoardController _boardController;
+        private InputService _inputService;
+        private AudioService _audioService; 
+        
 
         private Camera _mainCamera;
         private Piece _currentlySelectedPiece;
@@ -47,33 +51,34 @@ namespace ChessGame
             _pawnPromotionUI.gameObject.SetActive(false);
             _boardController = new BoardController(_container, _layout, _materials);
             _winText.gameObject.SetActive(false);
+            
+            _inputService = ServiceManager.GetService<InputService>();
+            _audioService = ServiceManager.GetService<AudioService>();
+
+            _inputService.InputReader.onSelectPressed += DetectSelection;
 
         }
 
         private void Update()
         {
-            DetectSelection();
-        }
-
-        // TODO Optimise, refactor to a more generic "Selection" system
-        private void DetectSelection()
-        {
-            if (Input.GetMouseButtonDown(0))
-            {
-                Ray ray = _mainCamera.ScreenPointToRay(Input.mousePosition);
-
-                if (Physics.Raycast(ray, out var hit))
-                {
-                    if (hit.transform.TryGetComponent(out ISelectable selectable))
-                    {
-                        selectable.OnSelect();
-                    }
-                }
-            }
-
             if (Input.GetKeyDown(KeyCode.Space))
             {
                 _boardController.ResetBoard();
+            }
+        }
+
+        private void DetectSelection()
+        {
+            Debug.Log("Display");
+            
+            Ray ray = _mainCamera.ScreenPointToRay(_inputService.InputReader.MousePointer);
+
+            if (Physics.Raycast(ray, out var hit))
+            {
+                if (hit.transform.TryGetComponent(out ISelectable selectable))
+                {
+                    selectable.OnSelect();
+                }
             }
         }
 
@@ -129,7 +134,7 @@ namespace ChessGame
                 selection.Coordinate = move.Coordinate;
             }
 
-            ServiceManager.GetService<AudioService>().OnPieceMove();
+            _audioService.OnPieceMove();
 
         }
 
@@ -152,7 +157,7 @@ namespace ChessGame
             _currentlySelectedPiece = null;
             _selectionView.HideSelectionView();
 
-            ServiceManager.GetService<AudioService>().OnPieceMove();
+            _audioService.OnPieceMove();
 
             ClearAvailableMovesView();
 

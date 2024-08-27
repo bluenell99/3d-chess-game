@@ -11,6 +11,7 @@ This is my work-in-progress 3D chess game, built in Unity (Using HDRP)
 
 - All the source files for this game can be found under `Assets/_Project`
 - Runtime code can be found under `Assets/_Project/Scripts/Runtime`
+- Editor only code can be found under `Assets/Project/Scripts/Editor`
 - Unit Tests can be found under `Assets/_Project/Scripts/Tests`
 
 

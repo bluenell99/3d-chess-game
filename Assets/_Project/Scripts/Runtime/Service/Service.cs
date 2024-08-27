@@ -1,22 +1,33 @@
 using UnityEngine;
 
-public abstract class Service : MonoBehaviour
+namespace ChessGame
 {
-    private void Register()
+    public abstract class Service : MonoBehaviour
     {
-        ServiceManager.AddService(this);
-    }
-    protected void Unregister()
-    {
-        ServiceManager.AddService(this);
-    }
-    protected virtual void Awake()
-    {
-        Register();
-    }
+        /// <summary>
+        /// Registers a new Service to the service manager
+        /// </summary>
+        private void Register()
+        {
+            ServiceManager.AddService(this);
+        }
 
-    private void OnDestroy()
-    {
-        ServiceManager.RemoveService(this);
+        /// <summary>
+        /// Unregisters this serve from the service manager
+        /// </summary>
+        private void Unregister()
+        {
+            ServiceManager.RemoveService(this);
+        }
+
+        protected virtual void Awake()
+        {
+            Register();
+        }
+
+        private void OnDestroy()
+        {
+            Unregister();
+        }
     }
 }

@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿// Credit git-ammend 
+using UnityEngine;
 
 public class Singleton<T> : MonoBehaviour where T : Component
 {
@@ -35,7 +36,7 @@ public class Singleton<T> : MonoBehaviour where T : Component
         InitializeSingleton();
     }
 
-    protected virtual void InitializeSingleton()
+    private void InitializeSingleton()
     {
         if (!Application.isPlaying) return;
 

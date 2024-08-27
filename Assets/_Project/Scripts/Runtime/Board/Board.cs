@@ -12,12 +12,23 @@ namespace ChessGame
 
         #region SETUP
 
+        /// <summary> The Squares on the board </summary>
         public  HashSet<Vector2Int> Squares { get; private set; }
+        
+        /// <summary> All the Pieces currently in play</summary> 
         public HashSet<Piece> PiecesInPlay { get; private set; }
 
+        /// <summary> The last piece that moved </summary>
         public Piece LastPieceMoved { get; set; }
+        
+        /// <summary>
+        /// The total number of squares in one dimension
+        /// </summary>
         private int BoardSize { get; set; }
 
+        /// <summary>
+        /// Invoked when the board is reset
+        /// </summary>
         public event Action onBoardReset;
 
         /// <summary>
@@ -39,11 +50,11 @@ namespace ChessGame
         /// </summary>
         private void CalculateSquareCoordinates()
         {
+            // The Board cannot have a negative or zero size
             if (BoardSize <=0)
-            {
                 throw new Exception("Board size must be a positive integer");
-            }
             
+            // Iterate in each dimension to populate the Squares HashSet
             for (int i = 0; i < BoardSize; i++)
             {
                 for (int j = 0; j < BoardSize; j++)
@@ -58,13 +69,16 @@ namespace ChessGame
 
         # region ACCESS
 
+        /// <summary>
+        /// Is the Board currentlyt evaluating Check
+        /// </summary>
         public bool IsEvaluatingCheck { get; set; } = false;
         
         /// <summary>
         /// Returns all the opponents pieces
         /// </summary>
-        /// <param name="piece"></param>
-        /// <returns></returns>
+        /// <param name="piece">Our Piece</param>
+        /// <returns>HashSet of all opponents Piece's</returns>
         public HashSet<Piece> GetOpponentPieces(Piece piece)
         {
             var pieces = new HashSet<Piece>();
@@ -80,7 +94,7 @@ namespace ChessGame
         /// <summary>
         /// Returns all of our pieces
         /// </summary>
-        /// <param name="piece"></param>
+        /// <param name="piece">Our piece</param>
         /// <returns></returns>
         public HashSet<Piece> GetPieces(Piece piece)
         {
@@ -93,6 +107,7 @@ namespace ChessGame
         /// <param name="piece"></param>
         public void AddPiece(Piece piece)
         {
+            // ensure Piece isn't null
             if (piece == null)
                 throw new NullReferenceException("Piece cannot be null");
             
@@ -105,22 +120,29 @@ namespace ChessGame
         /// <param name="piece"></param>
         public void RemovePiece(Piece piece)
         {
+            // ensure Piece isn't null
             if (piece == null)
                 throw new NullReferenceException("Piece cannot be null");
             
+            // ensure the Board actually contains this Piece
             if (!PiecesInPlay.Contains(piece))
                 throw new Exception("Pieces in play does not contain given piece");
 
             PiecesInPlay.Remove(piece);
         }
 
+        /// <summary>
+        /// Resets the Board state to it's starting layout
+        /// </summary>
         public void ResetBoard()
         {
+            // iterate through every Piece, and reset
             foreach (var piece in PiecesInPlay)
             {
                 piece.ResetPiece();
             }
             
+            // broadcast a reset
             onBoardReset?.Invoke();
         }
         
@@ -170,17 +192,29 @@ namespace ChessGame
         /// <returns></returns>
         public King GetOpponentsKing(Piece piece) => (King)GetOpponentPieces(piece).First(p => p is King);
 
+        /// <summary>
+        /// Gets all the opponent's Pieces that are directly attacking the King
+        /// </summary>
+        /// <param name="king">The king to check against</param>
+        /// <returns>HashSet of Piece's</returns>
+        /// <remarks>This doesn't return their King as part of the collection, as the King can never be in a position where it's under attack from another King</remarks>
         public HashSet<Piece> GetAttackingPieces(King king)
         {
+            // Create new HashSet
             HashSet<Piece> attackingPieces = new();
+            // Get all the opponent's Pieces, not including their King
             var opponentPieces = GetOpponentPieces(king).Where(p => p is not King);
 
+            // iterate through all the opponent's Pieces
             foreach (var opponentPiece in opponentPieces)
             {
+                // get their legal moves
                 var possibleMoves = opponentPiece.GetLegalMoves();
 
+                // iterate through their moves
                 foreach (var move in possibleMoves)
                 {
+                    // if the move's target coordinate is the given King's coordinate, it's considered attacked, and we add it to the HashSet to return
                     if (move.Coordinate == king.Coordinate)
                     {
                         attackingPieces.Add(opponentPiece);
@@ -191,8 +225,16 @@ namespace ChessGame
             return attackingPieces;
         }
 
+        /// <summary>
+        /// Evaluates the legality of a set of possible Moves
+        /// </summary>
+        /// <param name="possibleMoves"></param>
+        /// <param name="piece"></param>
+        /// <returns></returns>
+        /// <remarks>If the Piece's King is under check, this Piece MUST act upon it. It can either capture the checking piece, block it, or it can't move</remarks>
         public HashSet<Move> EvaluateMoveLegality(HashSet<Move> possibleMoves, Piece piece)
         {
+            // Get our King
             King king = GetKing(piece);
             List<Move> illegalMoves = new List<Move>();
 
@@ -208,23 +250,34 @@ namespace ChessGame
                 return possibleMoves;
             }
 
+            // Try and get a single attacking piece
             Piece checkingPiece = GetSingleCheckingPiece(piece);
 
+            // if no piece single piece was found, this Piece cannot move to protect the King from both Pieces at once, therefore it cannot move at all
             if (checkingPiece == null)
                 return new HashSet<Move>();
 
-            HashSet<Move> checkingPieceMoves =
-                checkingPiece.GetLegalMoves().Where(m => m.IsDeliveringCheck).ToHashSet();
+            // Get the move's from the single checking Piece
+            HashSet<Move> checkingPieceMoves = checkingPiece.GetLegalMoves().Where(m => m.IsDeliveringCheck).ToHashSet();
 
             return GetBlockingOrCapturingMoves(possibleMoves, checkingPiece, checkingPieceMoves);
 
         }
 
+        /// <summary>
+        /// Gets the required Square coordinates for a Castling move.
+        /// </summary>
+        /// <param name="king">The king to check against</param>
+        /// <param name="isKingSide">If the move is intended to be Kingside or not</param>
+        /// <returns>A HashSet of Vector2Int of possible castling squares</returns>
         public HashSet<Vector2Int> GetCastlingSquares(King king, bool isKingSide)
         {
+            // Create new HashSet
             HashSet<Vector2Int> requiredSquares = new();
+            // Get the Rank (y-coordinate) of the King
             int rank = king.Coordinate.y;
 
+            // These are the standard required-to-be-free Castling squares in a normal Chess layout
             if (isKingSide)
             {
                 requiredSquares.Add(new Vector2Int(5, rank));
@@ -240,6 +293,10 @@ namespace ChessGame
             return requiredSquares;
         }
 
+        /// <summary>
+        /// Updates the LastMovedPiece
+        /// </summary>
+        /// <param name="piece">The Piece that has just moved</param>
         public void SetLastMovedPiece(Piece piece)
         {
             LastPieceMoved = piece;
@@ -249,36 +306,47 @@ namespace ChessGame
 
         # region INTERNALS
 
+        /// <summary>
+        /// Trys to find a a single checking piece
+        /// </summary>
+        /// <param name="piece">One of our Pieces</param>
+        /// <returns>Returns a single Piece that has check on the king, or null if more than one checking piece is found, or no checking pieces are found</returns>
         private Piece GetSingleCheckingPiece(Piece piece)
         {
-            HashSet<Piece> opponentPieces =
-                GetOpponentPieces(piece).Where(p => p is not King && p.HasCheckOnKing).ToHashSet();
+            // Filter the opponents pieces where they have check on the King
+            HashSet<Piece> opponentPieces = GetOpponentPieces(piece).Where(p => p is not King && p.HasCheckOnKing).ToHashSet();
 
+            // if more than one are found, we can't return a single piece, so we return no Piece
             if (opponentPieces.Count != 1) return null;
 
+            // if only one is found, there will be only one in the collection, and therefore can return the first one
             return opponentPieces.First();
 
         }
 
         /// <summary>
-        /// Gets all of this pieces moves that will block or capture a checking piece
+        /// Gets all of the given Piece's moves that will block or capture a checking piece
         /// </summary>
-        /// <param name="possibleMoves"></param>
-        /// <param name="checkingPieces"></param>
-        /// <param name="checkingMoves"></param>
-        /// <returns></returns>
+        /// <param name="possibleMoves">The possible moves this Piece has</param>
+        /// <param name="checkingPieces">The Piece that has check on the our King</param>
+        /// <param name="checkingMoves">The Piece that has check on our King's moves</param>
+        /// <returns>Any legal moves that would block or capture the checking piece</returns>
         private HashSet<Move> GetBlockingOrCapturingMoves(HashSet<Move> possibleMoves, Piece checkingPiece, HashSet<Move> checkingMoves)
         {
+            
             HashSet<Move> legalMoves = new HashSet<Move>();
 
+            // iterate through our moves
             foreach (var move in possibleMoves)
             {
+                // if the move's target coordinate is the Piece, we can catpure
                 if (move.Coordinate == checkingPiece.Coordinate)
                 {
                     legalMoves.Add(move);
                     continue;
                 }
 
+                // if any of the piece's checking moves equal our move, we can block this move
                 if (checkingMoves.Any(m => m.Coordinate == move.Coordinate))
                 {
                     legalMoves.Add(move);
@@ -289,10 +357,5 @@ namespace ChessGame
         }
 
         #endregion
-
-        public void OnBoardStateUpdated()
-        {
-            
-        }
     }
 }

@@ -1,34 +1,44 @@
 ﻿    using Sirenix.OdinInspector;
     using UnityEngine;
-    
-    [RequireComponent(typeof(AudioSource))]
-    public class AudioService : Service
+
+    namespace ChessGame
     {
+        [RequireComponent(typeof(AudioSource))]
 
-        [SerializeField] private AudioClip[] _pieceMoveClips;
-
-        [SerializeField, Required] private AudioSource _source;
-        
-        protected override void Awake()
+        public class AudioService : Service
         {
 
-            base.Awake();
-            if (!_source)
+            [SerializeField] private AudioClip[] _pieceMoveClips;
+
+            [SerializeField, Required] private AudioSource _source;
+
+            protected override void Awake()
             {
-                _source = GetComponent<AudioSource>();
+                base.Awake();
+                
+                if (!_source)
+                    _source = GetComponent<AudioSource>();
             }
-        }
 
 
-        public void OnPieceMove()
-        {
-            PlayRandomClip(_pieceMoveClips);
-        }
+            /// <summary>
+            /// Plays a clip from the services PieceMovesClips array
+            /// </summary>
+            public void OnPieceMove()
+            {
+                PlayRandomClip(_pieceMoveClips);
+            }
 
-        private void PlayRandomClip(AudioClip[] clips)
-        {
-            int random = Random.Range(0, _pieceMoveClips.Length);
-            _source.PlayOneShot(clips[random]);
+            /// <summary>
+            /// Get a random clip from a collection of audio clips
+            /// </summary>
+            /// <param name="clips"></param>
+            private void PlayRandomClip(AudioClip[] clips)
+            {
+                int random = Random.Range(0, _pieceMoveClips.Length);
+                _source.PlayOneShot(clips[random]);
+            }
+
         }
 
     }

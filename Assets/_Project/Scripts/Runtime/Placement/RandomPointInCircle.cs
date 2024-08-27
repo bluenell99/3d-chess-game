@@ -6,6 +6,10 @@ namespace ChessGame
     {
         private float _radius;
 
+        /// <summary>
+        /// Gets a random point within a radius
+        /// </summary>
+        /// <param name="radius"></param>
         public RandomPointInCircle(float radius)
         {
             _radius = radius;

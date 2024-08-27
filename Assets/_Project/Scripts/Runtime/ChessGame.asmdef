@@ -2,7 +2,8 @@
     "name": "ChessGame",
     "rootNamespace": "",
     "references": [
-        "Unity.InputSystem"
+        "Unity.InputSystem",
+        "Sirenix.OdinInspector.Modules.UnityMathematics"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

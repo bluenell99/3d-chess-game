@@ -6,9 +6,19 @@ namespace ChessGame
     public class DirectMovementStrategy : MoveStrategy
     {
 
+        /// <summary>
+        /// Gets all possible moves for a given Piece
+        /// </summary>
+        /// <param name="movement">The directions to move in</param>
+        /// <param name="piece">The Piece we want check</param>
+        /// <param name="board">Reference to the board</param>
+        /// <returns></returns>
+        /// <remarks>Direct Move is a straight "teleport" to a square, and is used by the Knight and the King</remarks>
         public override HashSet<Move> GetPossibleMoves(HashSet<Vector2Int> movement, Piece piece, Board board)
         {
+            // Initialise empty HashSet of Moves,
             HashSet<Move> availableMoves = new HashSet<Move>();
+            // Intialise the Piece as not having check on the opponent's King
             piece.HasCheckOnKing = false;
 
             // for each move in given movement pattern

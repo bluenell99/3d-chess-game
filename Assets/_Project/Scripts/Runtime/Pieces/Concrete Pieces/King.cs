@@ -62,6 +62,7 @@ namespace ChessGame
             pieceColor)
         {
 
+            Board = board;
         }
         /// <summary>
         /// Returns the legal moves this piece has
@@ -150,15 +151,15 @@ namespace ChessGame
         /// Updates the Piece's position on the Board
         /// </summary>
         /// <param name="position">The new position</param>
-        /// <param name="isIntialSetup">Is this called from the Board intialisation</param>
+        /// <param name="isInitialSetup">Is this called from the Board intialisation</param>
         /// <param name="bypassTurnOrder">Does this bypass the turn order system</param>
-        public override void SetPositionOnBoard(Vector2Int position, bool isIntialSetup, bool bypassTurnOrder)
+        public override void SetPositionOnBoard(Vector2Int position, bool isInitialSetup, bool bypassTurnOrder)
         {
             // update the previous coordinate to the current coordinate
             PreviousCoordinate = Coordinate;
             
             // check if this is being placed as part of Board initialisation
-            if (isIntialSetup)
+            if (isInitialSetup)
             {
                 // update our current position
                 Coordinate = position;

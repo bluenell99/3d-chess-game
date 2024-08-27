@@ -110,8 +110,40 @@ namespace ChessGame
             // ensure Piece isn't null
             if (piece == null)
                 throw new NullReferenceException("Piece cannot be null");
+
+            piece.onPieceTurnEnd += EvaluateCheck;
+            piece.onPieceTaken += RemovePiece;
             
             PiecesInPlay.Add(piece);
+        }
+
+        private void EvaluateCheck(Piece piece)
+        {
+            IsEvaluatingCheck = true;
+            
+            // get both Kings
+            King king = GetKing(piece);
+            King opponentsKing = GetOpponentsKing(piece);
+
+            if (king == null)
+            {
+                IsEvaluatingCheck = false;
+                return;
+            }
+
+            if (opponentsKing == null)
+            {
+                IsEvaluatingCheck = false;
+                return;
+            }
+
+            // update the King's IsInCheck property based on this move
+            king.IsInCheck = GetAttackingPieces(king).Count > 0;
+            opponentsKing.IsInCheck = GetAttackingPieces(opponentsKing).Count > 0;
+            bool kingInCheckmate = king.IsCheckMate;
+            bool opponentInCheckmate = opponentsKing.IsCheckMate;
+
+            IsEvaluatingCheck = false;
         }
 
         /// <summary>
@@ -183,14 +215,38 @@ namespace ChessGame
         /// </summary>
         /// <param name="piece"></param>
         /// <returns></returns>
-        public King GetKing(Piece piece) => (King)GetPieces(piece).First(p => p is King);
+        public King GetKing(Piece piece)
+        {
+            try
+            {
+                King king = (King)GetPieces(piece).First(p => p is King);
+                return king;
+            }
+            catch (Exception e)
+            {
+                Debug.LogError(e);
+                return null;
+            }
+        }
 
         /// <summary>
         /// Returns the opponent of this piece's king
         /// </summary>
         /// <param name="piece"></param>
         /// <returns></returns>
-        public King GetOpponentsKing(Piece piece) => (King)GetOpponentPieces(piece).First(p => p is King);
+        public King GetOpponentsKing(Piece piece)
+        {
+            try
+            {
+                King king = (King)GetOpponentPieces(piece).First(p => p is King);
+                return king;
+            }
+            catch (Exception e)
+            {
+                Debug.LogError(e);
+                return null;
+            }
+        }
 
         /// <summary>
         /// Gets all the opponent's Pieces that are directly attacking the King

@@ -8,6 +8,7 @@ namespace ChessGame
     {
         public Rook(Vector2Int coordinate, PieceColor pieceColor, Board board) : base(PieceType.Rook, coordinate, pieceColor)
         {
+            Board = board;
         }
 
         public override HashSet<Move> GetLegalMoves()
@@ -66,31 +67,68 @@ namespace ChessGame
         /// Updates the Piece's position on the Board
         /// </summary>
         /// <param name="position">The new position</param>
-        /// <param name="isIntialSetup">Is this called from the Board intialisation</param>
+        /// <param name="isInitialSetup">Is this called from the Board initialisation</param>
         /// <param name="bypassTurnOrder">Does this bypass the turn order system</param>
-        public override void SetPositionOnBoard(Vector2Int position, bool isIntialSetup, bool bypassTurnOrder)
+        public override void SetPositionOnBoard(Vector2Int position, bool isInitialSetup, bool bypassTurnOrder)
         {
             // update the previous coordinate to the current coordinate
             PreviousCoordinate = Coordinate;
             
             // check if this is being placed as part of Board initialisation
-            if (isIntialSetup)
+            if (isInitialSetup)
             {
                 // update our current position
                 Coordinate = position;
                 OnPositionChanged(position);
                 return;
             }
-
-            // Try and capture a piece on this position
-            CaptureStrategy strategy = new RookCaptureStrategy();
-            strategy.TryCapture(Board, this, position);
+            
+            // try and get our King from the target position
+            if (Board.TryGetPieceFromSquare(position, out Piece piece))
+            {
+                if (piece is King && piece.PieceColor == PieceColor)
+                {
+                    // if we succeed, this is a castle
+                    position = Castle(piece, position);
+                }
+            }
+            else
+            {
+                CaptureStrategy strategy = new RookCaptureStrategy();
+                strategy.TryCapture(Board, this, position);
+            }
 
             // finalise
             CompleteMove(position);
         }
 
 
+        private Vector2Int Castle(Piece king, Vector2Int targetPosition)
+        {
+            Vector2Int newRookPosition;
+            bool isKingside = Coordinate.x > king.Coordinate.x;
 
+            if (isKingside)
+            {
+                // setup move for rook (+1 as move technically is the kings position, so we need to go right one square of where the king would be
+                newRookPosition = new Vector2Int(targetPosition.x + 1, targetPosition.y);
+                // trigger move for king (+2 takes the king right two squares
+                Vector2Int kingPosition = new Vector2Int(king.Coordinate.x + 2, king.Coordinate.y);
+                king.SetPositionOnBoard(kingPosition, false, true); // we bypass the turn order to ensure turn doesn't change after the king is moved
+
+            }
+            else
+            {
+                // setup move for rook (-1 as move technically is the kings position, so we need to go left one square of where the king would be
+                newRookPosition = new Vector2Int(targetPosition.x - 1, targetPosition.y);
+
+                // trigger move for king (-2 takes the king left two squares
+                Vector2Int kingPosition = new Vector2Int(king.Coordinate.x - 2, king.Coordinate.y);
+                king.SetPositionOnBoard(kingPosition, false, true);
+
+            }
+
+            return newRookPosition;
+        }
     }
 }

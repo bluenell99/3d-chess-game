@@ -1,5 +1,5 @@
 {
-    "name": "ChessGame",
+    "name": "ChessGame.Runtime",
     "rootNamespace": "",
     "references": [
         "Unity.InputSystem",

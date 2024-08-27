@@ -42,8 +42,6 @@ namespace ChessGame
                 pieceController.PlacePieceOnBoard(piece.Coordinate);
 
                 // Subscribe to required events 
-                piece.onPieceTaken += OnPieceTaken;
-
                 switch (piece)
                 {
                     case King king:
@@ -104,8 +102,6 @@ namespace ChessGame
                     var queenController = _pieceFactory.CreatePiece(queen, _pieceContainer, Board);
                     queenController.PlacePieceOnBoard(pawn.Coordinate);
 
-                    // subscribe to this Piece's onPieceTakenEvent to continue tracking captures of new Pieces
-                    queen.onPieceTaken += OnPieceTaken;
                     break;
 
                 case PieceType.Bishop:
@@ -113,7 +109,7 @@ namespace ChessGame
                     var bishopController = _pieceFactory.CreatePiece(bishop, _pieceContainer, Board);
                     bishopController.PlacePieceOnBoard(pawn.Coordinate);
 
-                    bishop.onPieceTaken += OnPieceTaken;
+                  
                     break;
 
                 case PieceType.Rook:
@@ -121,7 +117,7 @@ namespace ChessGame
                     var rookController = _pieceFactory.CreatePiece(rook, _pieceContainer, Board);
                     rookController.PlacePieceOnBoard(pawn.Coordinate);
 
-                    rook.onPieceTaken += OnPieceTaken;
+                    
                     break;
 
                 case PieceType.Knight:
@@ -129,7 +125,7 @@ namespace ChessGame
 
                     var knightController = _pieceFactory.CreatePiece(knight, _pieceContainer, Board);
                     knightController.PlacePieceOnBoard(pawn.Coordinate);
-                    knight.onPieceTaken += OnPieceTaken;
+                    
                     break;
             }
 

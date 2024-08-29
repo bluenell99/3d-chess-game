@@ -1,6 +1,10 @@
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using Sirenix.OdinInspector;
+using Sirenix.Utilities.Editor;
 using UnityEngine;
 using UnityEngine.Serialization;
 
@@ -22,6 +26,8 @@ namespace ChessGame
         
         [Header("Game Settings")]
         [SerializeField] private bool _turnsEnabled;
+
+        [SerializeField] private bool _playAgainstBot;
         
         private BoardController _boardController;
         private InputService _inputService;
@@ -31,6 +37,7 @@ namespace ChessGame
         private Camera _mainCamera;
         private Piece _currentlySelectedPiece;
         private Pawn _pawnToBePromoted;
+        private Stockfish _stockfish;
 
         public PieceColor CurrentTurn { get; private set; }
         public bool PawnPromotionInProgress { get; private set; }
@@ -55,6 +62,11 @@ namespace ChessGame
             _audioService = ServiceManager.GetService<AudioService>();
 
             _inputService.InputReader.onSelectPressed += DetectSelection;
+
+            _stockfish = new Stockfish(1);
+            string fen = Fen.Encode(_boardController.Board);
+            _stockfish.Start();
+            _stockfish.SetFenPosition(fen);
 
         }
 
@@ -90,6 +102,7 @@ namespace ChessGame
             CurrentTurn = colour;
         }
         
+        
         /// <summary>
         /// Advance to the next turn
         /// </summary>
@@ -98,8 +111,43 @@ namespace ChessGame
             CurrentTurn = CurrentTurn == PieceColor.White
                 ? PieceColor.Black
                 : PieceColor.White;
+
+            if (!_playAgainstBot) return;
+
+            if (CurrentTurn != PieceColor.Black) return;
+            
+            ProcessBotMove();
         }
 
+        /// <summary>
+        /// Processes a move with the Stockfish API
+        /// </summary>
+        private void ProcessBotMove()
+        {
+            // get the current board layout in Fen notation
+            string fen = Fen.Encode(_boardController.Board);
+            
+            // send to stockfish API
+            _stockfish.SetFenPosition(fen);
+            string bestMove =  _stockfish.GetBestMove();
+            
+            // convert response to usable Vector2Int coordinates (response gives piece to move position, and where to position)
+            Vector2Int[] bestMoveConverted = Utilities.AlgebraicMoveToVector2IntArray(bestMove);
+            
+            // get the piece
+            Piece fromPiece = _boardController.Board.GetPieceFromSquare(bestMoveConverted[0]);
+            // move the piece
+            fromPiece.SetPositionOnBoard(bestMoveConverted[1], false, false);
+            
+            // wait half a second so it's not instant
+            StartCoroutine(WaitForSeconds(0.5f));
+        }
+
+        private IEnumerator WaitForSeconds(float seconds)
+        {
+            yield return new WaitForSeconds(seconds);
+        }
+        
         /// <summary>
         /// Ends the game
         /// </summary>
@@ -252,6 +300,14 @@ namespace ChessGame
         public Transform GetTakenPieceContainer(PieceColor color)
         {
             return color == PieceColor.White ? _takenPiecesContainer.White : _takenPiecesContainer.Black;
+        }
+
+        private void OnApplicationQuit()
+        {
+            if (_stockfish!= null)
+            {
+                _stockfish.StopStockfish();
+            }
         }
     }
 }

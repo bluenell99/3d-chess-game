@@ -44,7 +44,7 @@ namespace ChessGame
             };
 
             // Create a new PawnMovementStrategy and get it's moves
-            MoveStrategy strategy = new PawnMoveStrategy();
+            PawnMoveStrategy strategy = new PawnMoveStrategy();
             HashSet<Move> possibleMoves = strategy.GetPossibleMoves(movement, this, Board);
 
             // Get the board to filter illegal moves

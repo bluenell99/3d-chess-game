@@ -22,10 +22,12 @@ namespace ChessGame
             int promotionRank = piece.PieceColor == PieceColor.White ? 7 : 0;
             
             // check the Pawns' position is it's promotion rank, and the Pawn isn't null
-            if (piece.Coordinate.y == promotionRank)
+            if (position.y == promotionRank)
                 if (pawn != null)
-                    // promote the Pawn
-                    pawn.Promote(pawn); 
+                {
+                    pawn.Promote(pawn);
+                    return;
+                }
 
             // EN-PASSANT
             // check that the last Piece that moved was a pawn as en-passant must be acted immediatley
@@ -41,6 +43,7 @@ namespace ChessGame
                 if (lastMovedPawn.Coordinate == enpassantTarget && Mathf.Abs(piece.PreviousCoordinate.y - position.y) == 1 && piece.PreviousCoordinate.x != position.x)
                 {
                     lastMovedPawn.Take();
+                    return;
                 }
             }
             

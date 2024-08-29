@@ -113,6 +113,11 @@ namespace ChessGame
 
             piece.onPieceTurnEnd += EvaluateCheck;
             piece.onPieceTaken += RemovePiece;
+
+            if (piece is Pawn pawn)
+            {
+                pawn.onPawnPromotionAvailable += RemovePiece;
+            }
             
             PiecesInPlay.Add(piece);
         }

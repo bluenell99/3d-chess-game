@@ -1,105 +1,91 @@
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Policy;
 using NUnit.Framework;
 using UnityEngine;
 
 namespace ChessGame.Tests
 {
-    public class BishopTests
+    public class KnightTests
     {
+        #region TESTS
+
         [Test]
-        public void Bishop_GetLegalMoves_ExpectedMovesWhenNoBlockingOrCapturingPieces()
+        public void Knight_GetLegalMoves_ExpectedMovesWhenNoBlockingOrCapturingPieces()
         {
             Board board = new Board(8);
-            Vector2Int startingPosition = new Vector2Int(3, 3);
+            Vector2Int startingPosition = new Vector2Int(3, 4);
+            Knight knight = new Knight(startingPosition, PieceColor.White, board);
+
             HashSet<Vector2Int> expectedLegalMoves = new HashSet<Vector2Int>()
             {
-                // left down
-                new(0, 0),
-                new(1, 1),
-                new(2, 2),
-                new(4, 4),
+                new(4, 6),
                 new(5, 5),
-                new(6, 6),
-                new(7, 7),
+                new(5, 3),
                 new(4, 2),
-                new(5, 1),
-                new(6, 0),
-                new(2, 4),
+                new(2, 2),
+                new(1, 3),
                 new(1, 5),
-                new(0, 6),            
+                new(2, 6)
             };
             
-
-            Piece piece = new Bishop(startingPosition, PieceColor.White, board);
-            board.AddPiece(piece);
+            board.AddPiece(knight);
             AddKings(board);
 
-            HashSet<Move> legalMoves = piece.GetLegalMoves();
+            HashSet<Move> legalMoves = knight.GetLegalMoves();
             
             Assert.IsNotNull(legalMoves);
             Assert.IsNotEmpty(legalMoves);
             Assert.That(legalMoves.Any(move => move.Coordinate != startingPosition));
-            
+            Assert.That(expectedLegalMoves.Count == legalMoves.Count);
+
             foreach (var move in legalMoves)
             {
-                Assert.That(board.IsSquareOnBoard(move.Coordinate));
                 Assert.IsTrue(expectedLegalMoves.Contains(move.Coordinate));
             }
-            
-            
         }
-        
+
         [Test]
-        public void Bishop_GetLegalMoves_ExpectedMovesWhenBlockingPiecesExist()
+        public void Knight_GetLegalMoves_ExpectedMovesWhenBlockingPiecesExist()
         {
             Board board = new Board(8);
-            Vector2Int startingPosition = new Vector2Int(3, 3);
-
-            Piece whitePawn = new Pawn(new Vector2Int(5, 5), PieceColor.White, board);
-            Piece blackPawn = new Pawn(new Vector2Int(1, 5), PieceColor.Black, board);
+            Vector2Int startingPosition = new Vector2Int(3, 4);
+            Knight knight = new Knight(startingPosition, PieceColor.White, board);
+            Pawn whitePawn = new Pawn(new Vector2Int(2, 6), PieceColor.White, board);
+            Pawn blackPawn = new Pawn(new Vector2Int(5, 5), PieceColor.Black, board);
 
             HashSet<Vector2Int> expectedLegalMoves = new HashSet<Vector2Int>()
             {
-
-                blackPawn.Coordinate,
-                new(2,4),
+                new(4,6),
+                new(5,3),
+                new(4,2),
                 new(2,2),
-                new(4,4),
-                new(2,2),
-                new(1,1),
-                new(0,0),
-                new (4,2),
-                new (5,1),
-                new (6,0)
-,           };
+                new(1,3),
+                new(1,5),
+                blackPawn.Coordinate
+            };
             
-
-
-            Piece piece = new Bishop(startingPosition, PieceColor.White, board);
-            board.AddPiece(piece);
+            board.AddPiece(knight);
             board.AddPiece(whitePawn);
             board.AddPiece(blackPawn);
             AddKings(board);
 
-            HashSet<Move> legalMoves = piece.GetLegalMoves();
-
+            HashSet<Move> legalMoves = knight.GetLegalMoves();
             
             Assert.IsNotNull(legalMoves);
             Assert.IsNotEmpty(legalMoves);
             Assert.That(legalMoves.Any(move => move.Coordinate != startingPosition));
-            
+            Assert.That(expectedLegalMoves.Count == legalMoves.Count);
+
             foreach (var move in legalMoves)
             {
-                Assert.That(board.IsSquareOnBoard(move.Coordinate));
                 Assert.IsTrue(expectedLegalMoves.Contains(move.Coordinate));
             }
         }
         
-
+        #endregion
 
         #region HELPERS
+
         private void AddKings(Board board)
         {
             King whiteKing = new King(new Vector2Int(4, 0), PieceColor.White, board);
@@ -108,6 +94,7 @@ namespace ChessGame.Tests
             board.AddPiece(whiteKing);
             board.AddPiece(blackKing);
         }
+
         #endregion
     }
 }

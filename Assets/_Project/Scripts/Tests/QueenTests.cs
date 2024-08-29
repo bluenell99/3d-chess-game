@@ -117,8 +117,6 @@ namespace ChessGame.Tests
                 Assert.IsTrue(expectedLegalMoves.Contains(move.Coordinate));
             }
         }
-        
-
 
         #region HELPERS
         private void AddKings(Board board)

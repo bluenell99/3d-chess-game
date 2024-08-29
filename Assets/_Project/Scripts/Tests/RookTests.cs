@@ -12,7 +12,8 @@ namespace ChessGame.Tests
         public void Rook_GetLegalMoves_ExpectedMovesWhenNoBlockingOrCapturingPieces()
         {
             Board board = new Board(8);
-            Vector2Int startingPosition = new Vector2Int(3, 3);
+            Vector2Int startingPosition = new Vector2Int(3, 2);
+            Vector2Int movePosition = new Vector2Int(3, 3);
             HashSet<Vector2Int> expectedLegalMoves = new HashSet<Vector2Int>
             {
                 new(0, 3),
@@ -35,13 +36,15 @@ namespace ChessGame.Tests
             board.AddPiece(piece);
             AddKings(board);
 
+            piece.SetPositionOnBoard(movePosition, false, false);
+            
             HashSet<Move> legalMoves = piece.GetLegalMoves();
 
             Assert.IsNotEmpty(legalMoves);
             Assert.IsNotNull(legalMoves);
             
             Assert.IsTrue(expectedLegalMoves.Count == legalMoves.Count);
-            Assert.That(legalMoves.Any(move=>move.Coordinate != startingPosition));
+            Assert.That(legalMoves.Any(move=>move.Coordinate != movePosition));
 
             foreach (var move in legalMoves)
             {
@@ -53,18 +56,22 @@ namespace ChessGame.Tests
         public void Rook_GetLegalMoves_ExpectedMovesWhenBlockingPiecesExist()
         {
             Board board = new Board(8);
-            Vector2Int startingPosition = new Vector2Int(3, 3);
+            Vector2Int startingPosition = new Vector2Int(3, 2);
+            Vector2Int movePosition = new Vector2Int(3, 3);
             
             Piece rook = new Rook(startingPosition, PieceColor.White, board);
             Piece blackPiece = new Pawn(new Vector2Int(3, 5), PieceColor.Black, board);
             Piece whitePiece = new Pawn(new Vector2Int(5, 3), PieceColor.White, board);
 
-            rook.HasMoved = true;
             
             board.AddPiece(rook);
             board.AddPiece(blackPiece);
             board.AddPiece(whitePiece);
             AddKings(board);
+
+
+            // need to move the rook otherwise it still shows the castling move as legal
+            rook.SetPositionOnBoard(movePosition, false, false);
             
             HashSet<Vector2Int> expectedLegalMoves = new HashSet<Vector2Int>
             {
@@ -84,7 +91,7 @@ namespace ChessGame.Tests
             Assert.IsNotEmpty(legalMoves);
             Assert.IsNotNull(legalMoves);
             Assert.IsTrue(expectedLegalMoves.Count == legalMoves.Count);
-            Assert.That(legalMoves.Any(move=>move.Coordinate != startingPosition));
+            Assert.That(legalMoves.Any(move=>move.Coordinate != movePosition));
 
             foreach (var move in legalMoves)
             {

@@ -27,6 +27,8 @@ namespace ChessGame
             _gameController = GameController.Instance;
 
             AddPiecesToBoard();
+            
+            Debug.Log(Fen.Encode(Board));
         }
 
         /// <summary>

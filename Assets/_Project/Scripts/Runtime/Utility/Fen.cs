@@ -1,9 +1,11 @@
-﻿namespace ChessGame
-{
+﻿using System.Linq;
+
     using System;
     using System.Collections.Generic;
     using UnityEngine;
 
+namespace ChessGame
+{
     public class Fen
     {
         public List<Piece> Pieces { get; set; }
@@ -25,6 +27,68 @@
             Decode();
         }
 
+        public static string Encode(Board board)
+        {
+            string piecePlacement = "";
+            string activeColor;
+            string castlingRights;
+            string enpassant;
+
+            for (int i = 7; i >= 0; i--)
+            {
+                string piecesInRow = "";
+                int emptySquares = 0;
+
+                for (int j = 0; j < 8; j++)
+                {
+                    if (board.TryGetPieceFromSquare(new Vector2Int(j,i), out Piece piece))
+                    {
+                        if (emptySquares > 0)
+                        {
+                            piecesInRow += emptySquares.ToString();
+                            emptySquares = 0;
+                        }
+
+                        char type = GetCharFromType(piece.Type);
+                        type = piece.PieceColor == PieceColor.Black ? char.ToLower(type) : type;
+                        piecesInRow += type;
+                    }
+                    else
+                    {
+                        emptySquares++;
+                    }
+                }
+
+                if (emptySquares > 0)
+                    piecesInRow += emptySquares.ToString();
+
+                piecePlacement += $"{piecesInRow}/";
+            }
+
+            if (piecePlacement.EndsWith("/"))
+                piecePlacement = piecePlacement.TrimEnd('/');
+
+            activeColor = GameController.Instance.CurrentTurn == PieceColor.White ? "w" : "b";
+
+            //TODO implement en-passant and castling availability into the FEN
+            
+            return $"{piecePlacement} {activeColor} - - {board.HalfMoveClock} {board.FullMoveNumber}";
+        }
+
+        private static char GetCharFromType(PieceType type)
+        {
+            return type switch
+            {
+                PieceType.Pawn => 'P',
+                PieceType.Knight => 'N',
+                PieceType.Bishop => 'B',
+                PieceType.Rook => 'R',
+                PieceType.Queen => 'Q',
+                PieceType.King => 'K',
+                _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
+            };
+        }
+        
         private void Decode()
         {
             string[] parts = _fenString.Split(' ');
@@ -41,7 +105,7 @@
             if (parts.Length > 2 && parts[2] != "-") CastlingAvailability = parts[2];
 
             if (parts.Length > 3 && parts[3] != "-")
-                EnPassantTargetSquare = FromAlgebraicNotation(parts[3]);
+                EnPassantTargetSquare = Utilities.FromAlgebraicNotation(parts[3]);
 
             if (parts.Length > 4 && int.TryParse(parts[4], out int halfmoveClock))
                 HalfmoveClock = halfmoveClock;
@@ -93,12 +157,7 @@
             }
         }
 
-        private static Vector2Int FromAlgebraicNotation(string algebraic)
-        {
-            int x = algebraic[0] - 'a';
-            int y = algebraic[1] - '1';
-            return new Vector2Int(x, y);
-        }
+        
 
     }
 

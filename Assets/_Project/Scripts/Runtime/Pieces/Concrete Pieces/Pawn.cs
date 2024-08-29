@@ -77,6 +77,8 @@ namespace ChessGame
 
             // finalise
             CompleteMove(position);
+            
+            Board.ResetHalfMoveClock();
         }
     }
 }

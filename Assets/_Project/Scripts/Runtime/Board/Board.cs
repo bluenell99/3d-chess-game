@@ -22,6 +22,18 @@ namespace ChessGame
         public Piece LastPieceMoved { get; set; }
         
         /// <summary>
+        /// The number of half-moves this board currently has
+        /// </summary>
+        /// <remarks> Halfmoves are reset when a Piece is captured, or a Pawn has moved</remarks>
+        public int HalfMoveClock { get; private set; }
+        
+        /// <summary>
+        /// The number of Fullmoves this board currently has
+        /// </summary>
+        /// <remarks>Fullmoves increment after both sides have moved. </remarks>
+        public int FullMoveNumber { get; private set; }
+        
+        /// <summary>
         /// The total number of squares in one dimension
         /// </summary>
         private int BoardSize { get; set; }
@@ -40,6 +52,9 @@ namespace ChessGame
             BoardSize = boardSize;
             Squares = new HashSet<Vector2Int>();
             PiecesInPlay = new HashSet<Piece>();
+
+            HalfMoveClock = 0;
+            FullMoveNumber = 1;
 
             CalculateSquareCoordinates();
 
@@ -165,7 +180,24 @@ namespace ChessGame
             if (!PiecesInPlay.Contains(piece))
                 throw new Exception("Pieces in play does not contain given piece");
 
+            HalfMoveClock = 0;
+            
             PiecesInPlay.Remove(piece);
+        }
+
+        public void ResetHalfMoveClock()
+        {
+            HalfMoveClock = 0;
+        }
+
+        public void IncrementFullMoveClock()
+        {
+            FullMoveNumber++;
+        }
+
+        public void IncrementHalfMoveClock()
+        {
+            HalfMoveClock++;
         }
 
         /// <summary>
@@ -178,9 +210,13 @@ namespace ChessGame
             {
                 piece.ResetPiece();
             }
+
+            HalfMoveClock = 0;
+            FullMoveNumber = 1;
             
             // broadcast a reset
             onBoardReset?.Invoke();
+            
         }
         
         /// <summary>
@@ -216,6 +252,21 @@ namespace ChessGame
         }
 
         /// <summary>
+        /// Get's a piece from a specific square
+        /// </summary>
+        /// <param name="coordinate"></param>
+        /// <returns></returns>
+        public Piece GetPieceFromSquare(Vector2Int coordinate)
+        {
+            if (TryGetPieceFromSquare(coordinate, out Piece piece))
+            {
+                return piece;
+            }
+
+            return null;
+        }
+
+        /// <summary>
         /// Returns this pieces king
         /// </summary>
         /// <param name="piece"></param>
@@ -231,6 +282,25 @@ namespace ChessGame
             {
                 Debug.LogError(e);
                 return null;
+            }
+        }
+
+        
+        /// <summary>
+        /// Gets the king of a given colour
+        /// </summary>
+        /// <param name="color"></param>
+        /// <returns></returns>
+        public King GetKing(PieceColor color)
+        {
+            try
+            {
+                return (King)PiecesInPlay.First(p => p.PieceColor == color && p is King);
+            }
+            catch (Exception e)
+            {
+                Debug.LogError(e);
+                throw;
             }
         }
 
@@ -362,6 +432,8 @@ namespace ChessGame
         {
             LastPieceMoved = piece;
         }
+
+        
 
         #endregion
 

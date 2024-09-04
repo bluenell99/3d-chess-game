@@ -18,4 +18,9 @@ public class SceneService : Service
     {
         SceneManager.LoadScene("_Project/Scenes/Main");
     }
+
+    public void LoadMenuScene()
+    {
+        SceneManager.LoadScene("_Project/Scenes/Menu");
+    }
 }

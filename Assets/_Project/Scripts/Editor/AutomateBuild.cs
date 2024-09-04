@@ -40,7 +40,13 @@ public class TestCallbacks : ICallbacks
 
     private void BuildPlayer()
     {
-        string[] scenes = { "Assets/_Project/Scenes/Main.unity" };
+        string[] scenes =
+        {
+            "Assets/_Project/Scenes/Boot.unity",
+            "Assets/_Project/Scenes/Menu.unity",
+            "Assets/_Project/Scenes/Main.unity",
+        };
+        
         DateTime now = DateTime.Now;
 
         BuildPlayerOptions buildPlayerOptions = new BuildPlayerOptions()
@@ -48,7 +54,6 @@ public class TestCallbacks : ICallbacks
             scenes = scenes,
             locationPathName = $"Builds/{now.Day}-{now.Month}-{now.Year}/{PlayerSettings.productName}.exe",
             target = BuildTarget.StandaloneWindows64,
-            options = BuildOptions.Development
         };
 
         BuildPipeline.BuildPlayer(buildPlayerOptions);

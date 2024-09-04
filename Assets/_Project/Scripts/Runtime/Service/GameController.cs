@@ -1,10 +1,8 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Sirenix.OdinInspector;
-using Sirenix.Utilities.Editor;
+
 using UnityEngine;
 using UnityEngine.Serialization;
 
@@ -31,7 +29,8 @@ namespace ChessGame
         
         private BoardController _boardController;
         private InputService _inputService;
-        private AudioService _audioService; 
+        private AudioService _audioService;
+        private SceneService _sceneService;
         
 
         private Camera _mainCamera;
@@ -54,28 +53,40 @@ namespace ChessGame
             _selectionView.Initialise(false);
             _selectionView.HideSelectionView();
             
-            _pawnPromotionUI.gameObject.SetActive(false);
-            _boardController = new BoardController(_pieceContainer, _layout, _materials);
             _gameWinUI.gameObject.SetActive(false);
+            _pawnPromotionUI.gameObject.SetActive(false);
             
-            _inputService = ServiceManager.GetService<InputService>();
-            _audioService = ServiceManager.GetService<AudioService>();
+            _boardController = new BoardController(_pieceContainer, _layout, _materials);
+            
+            GetServices();
+            StartStockfish();
 
             _inputService.InputReader.onSelectPressed += DetectSelection;
 
+        }
+
+        private void StartStockfish()
+        {
+            if (!DataManager.Instance.PlayingAgainstBot)
+                return;
+            
             _stockfish = new Stockfish(1);
             string fen = Fen.Encode(_boardController.Board);
             _stockfish.Start();
             _stockfish.SetFenPosition(fen);
+        }
 
+        private void GetServices()
+        {
+            _inputService = ServiceManager.GetService<InputService>();
+            _audioService = ServiceManager.GetService<AudioService>();
+            _sceneService = ServiceManager.GetService<SceneService>();
         }
 
         private void Update()
         {
             if (Input.GetKeyDown(KeyCode.Space))
-            {
-                _boardController.ResetBoard();
-            }
+                _sceneService.ReloadScene();
         }
 
         private void DetectSelection()
@@ -97,12 +108,9 @@ namespace ChessGame
         /// Sets the games current turn
         /// </summary>
         /// <param name="color">The given turns colour </param>
-        public void SetTurn(PieceColor colour)
-        {
-            CurrentTurn = colour;
-        }
-        
-        
+        public void SetTurn(PieceColor colour) => CurrentTurn = colour;
+
+
         /// <summary>
         /// Advance to the next turn
         /// </summary>
@@ -112,7 +120,7 @@ namespace ChessGame
                 ? PieceColor.Black
                 : PieceColor.White;
 
-            if (!_playAgainstBot) return;
+            if (!DataManager.Instance.PlayingAgainstBot) return;
 
             if (CurrentTurn != PieceColor.Black) return;
             

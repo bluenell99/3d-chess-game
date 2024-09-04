@@ -87,6 +87,8 @@ namespace ChessGame
         {
             // set as unselectable
             SetSelectable(false);
+            gameObject.SetActive(false);
+            return;
             
             // create a new Placement stratgegy
             PlacementStrategy placementStrategy = new RandomPointInCircle(3);

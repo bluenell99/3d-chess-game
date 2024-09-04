@@ -124,6 +124,12 @@ namespace ChessGame
             // Notify the board that this is the last piece moved
             Board.SetLastMovedPiece(this);
 
+            // increment the full move clock after blacks move
+            if (PieceColor == PieceColor.Black)
+                Board.IncrementFullMoveClock();;
+            
+            Board.IncrementHalfMoveClock();;
+            
             // Invoke the end turn event
             onPositionChanged?.Invoke(position);
             onPieceTurnEnd?.Invoke(this);
